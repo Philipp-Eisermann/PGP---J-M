@@ -10,7 +10,17 @@ def accept_incoming_connections():
     """Sets up handling for incoming clients."""
     while True:
         client, client_address = SERVER.accept()
+        rsa, rsa_address = RSA.accept()
         print("%s:%s has connected." % client_address)
+
+        if not addresses:
+            client.send(bytes("You are head client!!", "utf8"))
+            rsa.send(bytes("head", "utf8"))
+            HEAD = rsa
+        else:
+            rsa.send(bytes("sheep", "utf8"))
+            pubkey = rsa.recv(BUFSIZ).decode("utf8")
+            print(ord(pubkey[0]), ' ', ord(pubkey[1]))
         addresses[client] = client_address
         Thread(target=handle_client, args=(client, client_address)).start()
 
@@ -25,6 +35,7 @@ def handle_client(client, client_address):  # Takes client socket as argument.
     client.send(bytes(welcome, "utf8"))
     msg = "%s has joined the chat!" % name
     broadcast(bytes(msg, "utf8"))
+
     clients[client] = name
 
     while True:
@@ -59,12 +70,11 @@ def rsa():
 
 clients = {}
 addresses = {}
+HEAD = socket()
 
-
-
-HOST = 'localhost'
-PORT = 5566
-RSAPORT = 8080
+HOST = ''
+PORT = 8080
+RSAPORT = 8081
 BUFSIZ = 1024
 ADDR = (HOST, PORT)
 RSAADDR = (HOST, RSAPORT)
