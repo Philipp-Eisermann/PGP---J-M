@@ -93,10 +93,24 @@ def setup_rsa(n, e):
     e2 = client_socket.recv(BUFSIZ).decode("utf8")
     return [n2, e2]
 
+def rsa_rcv():
+    try:
+        status = RSA.recv(BUFSIZ).decode("utf8")
+        print(status)
+    except:
+        print("couille")
+
+    if status == "head":
+        pass
+    else:
+        rsapub = publickey(input_p, input_q)
+        pubkey = chr(rsapub[0]) + chr(rsapub[1])
+        RSA.send(bytes(pubkey, "utf8"))
+
 
 #- - - - - - - - - - - - - - - - TKINTER - - - - - - - - - - - - - - - -
 top = tkinter.Tk()
-top.title("Chatter")
+top.title("J & M messenger")
 
 messages_frame = tkinter.Frame(top)
 my_msg = tkinter.StringVar()  # For the messages to be sent.
@@ -132,10 +146,13 @@ if not PORT:
 else:
     PORT = int(PORT)
 
+RSAPORT = 8081
 BUFSIZ = 1024
 ADDR = (HOST, PORT)
+RSAADDR = (HOST, RSAPORT)
 
-
+RSA = socket(AF_INET, SOCK_STREAM)
+RSA.connect(RSAADDR)
 
 client_socket = socket(AF_INET, SOCK_STREAM)
 client_socket.connect(ADDR)
@@ -144,5 +161,9 @@ client_socket.connect(ADDR)
 #client2_n, client_e = setup_rsa(gen_n, gen_e)
 
 receive_thread = Thread(target=receive)
+rsa_thread = Thread(target=rsa_rcv)
+
+rsa_thread.start()
 receive_thread.start()
+
 tkinter.mainloop()  # Starts GUI execution.
