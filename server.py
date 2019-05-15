@@ -20,7 +20,9 @@ def accept_incoming_connections():
         else:
             rsa.send(bytes("sheep", "utf8"))
             pubkey = rsa.recv(BUFSIZ).decode("utf8")
-            print(ord(pubkey[0]), ' ', ord(pubkey[1]))
+            pubkey_s = pubkey.split(' ')
+            print(str(pubkey_s[0]), ' ', str(pubkey_s[1]))
+            #rsa_addresses[client] = pubkey_s
         addresses[client] = client_address
         Thread(target=handle_client, args=(client, client_address)).start()
 
@@ -71,6 +73,7 @@ def rsa():
 clients = {}
 addresses = {}
 HEAD = socket()
+rsa_addresses = {}
 
 HOST = ''
 PORT = 8080

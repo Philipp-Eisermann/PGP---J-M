@@ -104,7 +104,7 @@ def rsa_rcv():
         pass
     else:
         rsapub = publickey(input_p, input_q)
-        pubkey = chr(rsapub[0]) + chr(rsapub[1])
+        pubkey = str(rsapub[0]) + ' ' + str(rsapub[1])
         RSA.send(bytes(pubkey, "utf8"))
 
 
