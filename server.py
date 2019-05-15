@@ -75,31 +75,23 @@ addresses = {}
 HEAD = socket()
 rsa_addresses = {}
 
-<<<<<<< HEAD
-
-
-HOST = '172.20.10.4'
-PORT = 5566
-RSAPORT = 8080
-=======
 HOST = ''
 PORT = 8080
 RSAPORT = 8081
->>>>>>> e82148418105d98bed65d90b788d6ca4080eafe1
 BUFSIZ = 1024
 ADDR = (HOST, PORT)
 RSAADDR = (HOST, RSAPORT)
 
 SERVER = socket(AF_INET, SOCK_STREAM)
-#RSA = socket(AF_INET, SOCK_STREAM)
+RSA = socket(AF_INET, SOCK_STREAM)
 SERVER.bind(ADDR)
-#RSA.bind(RSAADDR)
+RSA.bind(RSAADDR)
 
 
 
 if __name__ == "__main__":
     SERVER.listen(5)
-    #RSA.listen(5)
+    RSA.listen(5)
     print("Waiting for connection...")
     ACCEPT_THREAD = Thread(target=accept_incoming_connections)
     ACCEPT_THREAD.start()

@@ -157,7 +157,6 @@ RSA.connect(RSAADDR)
 client_socket = socket(AF_INET, SOCK_STREAM)
 client_socket.connect(ADDR)
 
-
 #client2_n, client_e = setup_rsa(gen_n, gen_e)
 
 receive_thread = Thread(target=receive)
