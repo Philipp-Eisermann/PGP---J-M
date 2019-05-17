@@ -82,30 +82,48 @@ def on_closing(event=None):
     my_msg.set("/quit")
     send()
 
-def setup_rsa(n, e):
+def key_setup():
+    vigkey = 20
     # envoyer au serveur la clef publique et recevoir la clef publique de l'autre client
-    client_socket.send(bytes(str(n), "utf8"))
-    time.sleep(1)
-    client_socket.send(bytes(str(e), "utf8"))
-    time.sleep(1)
-    n2 = client_socket.recv(BUFSIZ).decode("utf8")
-    time.sleep(1)
-    e2 = client_socket.recv(BUFSIZ).decode("utf8")
-    return [n2, e2]
+    #client_socket.send(bytes(str(n), "utf8"))
+    #time.sleep(1)
+    #client_socket.send(bytes(str(e), "utf8"))
+    #time.sleep(1)
+    #n2 = client_socket.recv(BUFSIZ).decode("utf8")
+    #time.sleep(1)
+    #e2 = client_socket.recv(BUFSIZ).decode("utf8")
+    #return [n2, e2]
 
-def rsa_rcv():
+
+
+def rsa_status():
     try:
         status = RSA.recv(BUFSIZ).decode("utf8")
         print(status)
     except:
         print("couille")
+        return 0
 
     if status == "head":
-        pass
+        while True:
+            try:
+                pubkey2 = RSA.recv(BUFSIZ).decode("utf8") #recevoir la cle publique du sheep
+                pubkey2_s = pubkey2.split(' ') #decomposer la cle
+                rsavigkey = encrypt(vigkeyint, pubkey_s[0], pubkey_s[1]) #msg, n, e
+                RSA.send(bytes(rsavigkey), "utf8")
+            except:
+                time.sleep(3)
     else:
-        rsapub = publickey(input_p, input_q)
-        pubkey = chr(rsapub[0]) + chr(rsapub[1])
+        print("be")
+        rsapub = publickey(11, 13)
+        print(rsapub)
+        pubkey = str(rsapub[0]) + ' ' + str(rsapub[1])
+        print("be")
         RSA.send(bytes(pubkey, "utf8"))
+        print("af")
+        time.sleep(3)
+        rsavigkey = RSA.recv(BUFSIZ).decode("utf8")
+        return rsavigkey
 
 
 #- - - - - - - - - - - - - - - - TKINTER - - - - - - - - - - - - - - - -
@@ -133,8 +151,10 @@ top.protocol("WM_DELETE_WINDOW", on_closing)
 
 #- - - - - - - - - - - - - - - - M A I N - - - - - - - - - - - - - - - -
 
-input_p = 164051
-input_q = 164057
+input_p = 11
+input_q = 13
+vigkey = "thisisthekey"
+vigkeyint = 20
 
 gen_n, gen_e = publickey(input_p, input_q)
 gen_d = privatekey(input_p, input_q, gen_e)
@@ -157,13 +177,13 @@ RSA.connect(RSAADDR)
 client_socket = socket(AF_INET, SOCK_STREAM)
 client_socket.connect(ADDR)
 
-
 #client2_n, client_e = setup_rsa(gen_n, gen_e)
 
 receive_thread = Thread(target=receive)
-rsa_thread = Thread(target=rsa_rcv)
+rsastatus_thread = Thread(target=rsa_status)
+keysetup_thread = Thread(target=key_setup)
 
-rsa_thread.start()
+rsastatus_thread.start()
 receive_thread.start()
 
 tkinter.mainloop()  # Starts GUI execution.
