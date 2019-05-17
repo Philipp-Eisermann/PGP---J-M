@@ -22,13 +22,12 @@ def accept_incoming_connections():
             time.sleep(1)
             pubkey = rsa.recv(BUFSIZ).decode("utf8") # cle pub du sheep
             print(pubkey)
-            pubkey_s = pubkey.split(' ')
-            print(pubkey)
+            HEAD.send(bytes(pubkey, "utf8"))
             #rsa_addresses[client] = pubkey_s
-            time.sleep(1)
-            rsavigkey = rsa.recv(BUFSIZ).decode("utf8")
-            time.sleep(0.5)
-            rsa.send(bytes(rsavigkey, "utf8"))
+            print("be")
+            rsavigkey = HEAD.recv(BUFSIZ).decode("utf8") # clevig du head
+            print("af")
+            rsa.send(bytes(rsavigkey, "utf8")) #envoye clevig au sheep
         addresses[client] = client_address
         Thread(target=handle_client, args=(client, client_address)).start()
 

@@ -97,6 +97,7 @@ def key_setup():
 
 
 def rsa_status():
+    vigkeyint = 20
     try:
         status = RSA.recv(BUFSIZ).decode("utf8")
         print(status)
@@ -106,24 +107,30 @@ def rsa_status():
 
     if status == "head":
         while True:
-            try:
-                pubkey2 = RSA.recv(BUFSIZ).decode("utf8") #recevoir la cle publique du sheep
-                pubkey2_s = pubkey2.split(' ') #decomposer la cle
-                rsavigkey = encrypt(vigkeyint, pubkey_s[0], pubkey_s[1]) #msg, n, e
-                RSA.send(bytes(rsavigkey), "utf8")
-            except:
-                time.sleep(3)
+            pubkey2 = RSA.recv(BUFSIZ).decode("utf8") #recevoir la clepub du sheep via le serv
+            pubkey2_s = pubkey2.split(' ') #decomposer la cle
+            pubkey2_s_n = int(pubkey2_s[0])
+            pubkey2_s_e = int(pubkey2_s[1])
+            rsavigkey = encrypt(vigkeyint, pubkey2_s_n, pubkey2_s_e) #msg, n, e
+            print(str(rsavigkey))
+            RSA.send(bytes(str(rsavigkey), "utf8")) # envoyer au serveur
+
     else:
+        rsapub_n, rsapub_e = publickey(input_p, input_q) #p, q
+        rsapriv = privatekey(input_p, input_q, rsapub_e) #p, q, e
+        print(str(rsapub_n) + " " + str(rsapub_e))
+        pubkey = str(rsapub_n) + ' ' + str(rsapub_e)
         print("be")
-        rsapub = publickey(11, 13)
-        print(rsapub)
-        pubkey = str(rsapub[0]) + ' ' + str(rsapub[1])
-        print("be")
-        RSA.send(bytes(pubkey, "utf8"))
+        RSA.send(bytes(pubkey, "utf8")) #sheep envoie la cle publique au serveur
         print("af")
-        time.sleep(3)
-        rsavigkey = RSA.recv(BUFSIZ).decode("utf8")
-        return rsavigkey
+        time.sleep(1)
+        rsavigkey = RSA.recv(BUFSIZ).decode("utf8") #sheep recoit vigkey du head
+        print("c: " + rsavigkey)
+        print("d: " + str(rsapriv))
+        print("n: " + str(rsapub_n))
+        vigkey = decrypt(int(rsavigkey), int(rsapriv), rsapub_n) #c, d, n !!! Attention les variables doivent toutes etre des int, pas de float !!!
+        print(str(vigkey))
+        return vigkey
 
 
 #- - - - - - - - - - - - - - - - TKINTER - - - - - - - - - - - - - - - -
@@ -151,8 +158,8 @@ top.protocol("WM_DELETE_WINDOW", on_closing)
 
 #- - - - - - - - - - - - - - - - M A I N - - - - - - - - - - - - - - - -
 
-input_p = 11
-input_q = 13
+input_p = 53
+input_q = 59
 vigkey = "thisisthekey"
 vigkeyint = 20
 
