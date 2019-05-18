@@ -64,6 +64,7 @@ def receive():
             print(vigkey)
             dkmsg = devigenere(msg, chr(20))
             msg_list.insert(tkinter.END, dkmsg)
+            msg_list.see(tkinter.END)
 
         except OSError:  # Possibly client has left the chat.
             break
@@ -115,6 +116,9 @@ def rsa_status():
         return 0
 
     if status == "head":
+        msg_list.insert(tkinter.END, "You are head client!")
+        msg_list.insert(tkinter.END, "Welcome! If you ever want to quit, type /quit to exit.")
+        msg_list.insert(tkinter.END, "What is your name?")
         while True:
             pubkey2 = RSA.recv(BUFSIZ).decode("utf8") #recevoir la clepub du sheep via le serv
             pubkey2_s = pubkey2.split(' ') #decomposer la cle
@@ -139,6 +143,8 @@ def rsa_status():
         print("n: " + str(rsapub_n))
         vigkey = decrypt(int(rsavigkey), int(rsapriv), rsapub_n) #c, d, n !!! Attention les variables doivent toutes etre des int, pas de float !!!
         print(str(vigkey))
+        msg_list.insert(tkinter.END, "Welcome! If you ever want to quit, type /quit to exit.")
+        msg_list.insert(tkinter.END, "What is your name?")
         return vigkey
 
 

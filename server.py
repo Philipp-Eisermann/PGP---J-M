@@ -11,10 +11,10 @@ def accept_incoming_connections():
     while True:
         client, client_address = SERVER.accept()
         rsa, rsa_address = RSA.accept()
-        print("%s:%s has connected." % client_address)
+        #print("%s:%s has connected." % client_address)
 
         if not addresses:
-            client.send(bytes("You are head client!!", "utf8"))
+            #client.send(bytes("You are head client!!", "utf8"))
             rsa.send(bytes("head", "utf8"))
             HEAD = rsa
         else:
@@ -35,11 +35,11 @@ def accept_incoming_connections():
 def handle_client(client, client_address):  # Takes client socket as argument.
     """Handles a single client connection."""
 
-    client.send(bytes("Hi, what's your name?", "utf8"))
+    #client.send(bytes("Hi, what's your name?", "utf8"))
     name = client.recv(BUFSIZ).decode("utf8")
-    welcome = 'Welcome %s! If you ever want to quit, type /quit to exit.' % name
+    #welcome = 'Welcome %s! If you ever want to quit, type /quit to exit.' % name
 
-    client.send(bytes(welcome, "utf8"))
+    #client.send(bytes(welcome, "utf8"))
     msg = "%s has joined the chat!" % name
     broadcast(bytes(msg, "utf8"))
 
