@@ -2,6 +2,7 @@
 """Script for Tkinter GUI chat client."""
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
+from vigenere_lib import *
 import tkinter
 import time
 
@@ -60,7 +61,9 @@ def receive():
     while True:
         try:
             msg = client_socket.recv(BUFSIZ).decode("utf8")
-            msg_list.insert(tkinter.END, msg)
+            print(vigkey)
+            dkmsg = devigenere(msg, chr(20))
+            msg_list.insert(tkinter.END, dkmsg)
 
         except OSError:  # Possibly client has left the chat.
             break
@@ -70,11 +73,17 @@ def send(event=None):  # event is passed by binders.
     """Handles sending of messages."""
     msg = my_msg.get()
 
-    my_msg.set("")  # Clears input field.
-    client_socket.send(bytes(msg, "utf8"))
     if msg == "/quit":
         client_socket.close()
         top.quit()
+    else:
+        kmsg = vigenerechiffr(msg, chr(20)) # message chiffre en vigenere
+        print(vigkey)
+        print(msg, ' ', kmsg)
+
+        my_msg.set("")  # Clears input field.
+        client_socket.send(bytes(kmsg, "utf8"))
+
 
 
 def on_closing(event=None):
