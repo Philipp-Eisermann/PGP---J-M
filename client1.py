@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Script for Tkinter GUI chat client."""
-from socket import AF_INET, socket, SOCK_STREAM
+from socket import *
 from threading import Thread
 from vigenere_lib import *
 import tkinter
@@ -24,14 +24,23 @@ def receive():
 
 def send(event=None):                                       # event is passed by binders.
     """Handles sending of messages."""
+    global NAME
+    global vigkeyint
+
     msg = my_msg.get()
 
     if msg == "/quit":                                      # exits the app
         client_socket.close()
         top.quit()                                          # exits the GUI
 
+    elif msg[:5] == "/name":
+        old = NAME
+        NAME = msg[6:]
+        my_msg.set("")
+        client_socket.send(bytes(vigenerechiffr(old + " changed name to " + NAME, chr(vigkeyint)), "utf8"))
+
     else:
-        kmsg = vigenerechiffr(msg, chr(20))                 # cyphers msg using vig
+        kmsg = vigenerechiffr(NAME + ": " + msg, chr(vigkeyint))                 # cyphers msg using vig
 
         my_msg.set("")                                      # Clears input field.
         client_socket.send(bytes(kmsg, "utf8"))             # sends msg to server for distribution
@@ -63,7 +72,9 @@ def rsa_status():
         # greeting messages
         msg_list.insert(tkinter.END, "You are head client!")
         msg_list.insert(tkinter.END, "Welcome! If you ever want to quit, type /quit to exit.")
-        msg_list.insert(tkinter.END, "What is your name?")
+        msg_list.insert(tkinter.END, "If you want to change your name type /name <NAME>.")
+
+        client_socket.send(bytes(vigenerechiffr(NAME, chr(vigkeyint)), "utf8"))
 
         while True:
             pubkey2 = RSA.recv(BUFSIZ).decode("utf8")       # rcv pubkey from sheep via server
@@ -88,7 +99,11 @@ def rsa_status():
 
         # greeting messages
         msg_list.insert(tkinter.END, "Welcome! If you ever want to quit, type /quit to exit.")
-        msg_list.insert(tkinter.END, "What is your name?")
+        msg_list.insert(tkinter.END, "If you want to change your name type /name <NAME>.")
+
+        client_socket.send(bytes(vigenerechiffr(NAME, chr(vigkeyint)), "utf8"))
+        client_socket.send(bytes(vigenerechiffr(NAME + " joined the chat!", chr(vigkeyint)), "utf8"))
+
         return vigkey
 
 
@@ -123,6 +138,7 @@ input_p = 53
 input_q = 59
 vigkey = "thisisthekey"
 vigkeyint = 20
+NAME = getfqdn()
 
 gen_n, gen_e = publickey(input_p, input_q)                      # RSA pub setup
 gen_d = privatekey(input_p, input_q, gen_e)                     # RSA private setup

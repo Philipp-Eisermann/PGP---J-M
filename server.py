@@ -39,7 +39,7 @@ def handle_client(client, client_address):                          # Takes clie
 
     # client.send(bytes(welcome, "utf8"))
     # msg = "%s has joined the chat!" % name
-    broadcast(bytes(msg, "utf8"))                                   # send messages to all client
+    # broadcast(bytes(msg, "utf8"))                                   # send messages to all client
 
     clients[client] = name
 
@@ -47,7 +47,9 @@ def handle_client(client, client_address):                          # Takes clie
         msg = client.recv(BUFSIZ)
 
         if msg != bytes("/quit", "utf8"):
-            broadcast(msg, name+": ")
+            # broadcast(msg, name+": ")
+            broadcast(msg, "")
+
         else:
             client.send(bytes("/quit", "utf8"))
             client.close()
