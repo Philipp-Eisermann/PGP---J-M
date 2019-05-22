@@ -1,5 +1,3 @@
-import numpy
-
 def gcd(a, h):
     #trouver le pgcd de a et h
     while (1):
@@ -9,6 +7,7 @@ def gcd(a, h):
             break
         a = h
         h = temp
+
 
 def publickey(p, q):
     # Premiere partie de la cle publique
@@ -27,6 +26,7 @@ def publickey(p, q):
     print(str(n),str(e))
     return [n, e]
 
+
 def privatekey(p, q, e):
     #regenerer phi
     phi = (p-1)*(q-1)
@@ -37,6 +37,7 @@ def privatekey(p, q, e):
     print(str(d))
     return d
 
+
 def encrypt(msg, n, e):
     # Trouver c, le message crypte
     # c = (msg ^ e) % n
@@ -44,10 +45,12 @@ def encrypt(msg, n, e):
     print(str(pow(msg,e) % n))
     return c
 
+
 def decrypt(c, d, n):
     # msg = (c^d) % n
     m = pow(c, d) % n
     return m
+
 
 input_p = 53
 input_q = 59

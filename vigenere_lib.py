@@ -1,11 +1,14 @@
+# - - - - - - - - - - - - - - - - V I G - - - - - - - - - - - - - - - -
+
+
 def vigenerechiffr(Cryptage, encryptcode):
     # valeurs a incrémenter
     y = 0
 
-    # la séquence cryptée
+    # la séquence chiffrée
     w = ""
 
-    # processus d'encryption
+    # processus de chiffrement
     for x in range(0, len(Cryptage)):
         b = Cryptage[x]
 
@@ -28,6 +31,7 @@ def vigenerechiffr(Cryptage, encryptcode):
         y += 1
 
     return w
+
 
 def devigenere(sortie, decryptcode):
     # valeurs a incrémenter en décryptage
@@ -64,9 +68,54 @@ def devigenere(sortie, decryptcode):
     # Affichage du résultat
     return wd
 
+# - - - - - - - - - - - - - - - - R S A - - - - - - - - - - - - - - - -
 
-#msg = input("your message: ")
-#key = input("key: ")
+def gcd(a, h):
+    #trouver le pgcd de a et h
+    while (1):
+        temp = a % h
+        if (temp == 0):
+            return h
+            break
+        a = h
+        h = temp
 
-#print(vigenerechiffr(msg, key))
-#print(devigenere(vigenerechiffr(msg,key), key))
+
+def publickey(p, q):
+    # Premiere partie de la cle publique
+    n = p*q
+
+    # Deuxieme partie de la cle publique
+    # e pour encrypt
+    phi = (p-1)*(q-1)
+    e = 2
+    while (e < phi):
+        # Trouver e tel que e coprime a phi et e<phi
+        if (gcd(e, phi) == 1):
+            break
+        else:
+            e += 1
+    return [n, e]
+
+
+def privatekey(p, q, e):
+    #regenerer phi
+    phi = (p-1)*(q-1)
+    # Generer clee privee d comme decrypt
+    # d = (1 + k*phi) / e pour k une variable int constante, (ex. k=2)
+    k = 2
+    d = ( 1 + (k*phi) ) / e
+    return d
+
+
+def encrypt(msg, n, e):
+    # Trouver c, le message crypte
+    # c = (msg ^ e) % n
+    c = pow(msg, e) % n
+    return c
+
+
+def decrypt(c, d, n):
+    # msg = (c^d) % n
+    m = pow(c, d) % n
+    return m
