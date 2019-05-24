@@ -17,7 +17,7 @@ def receive():
     while True:
         try:
             msg = client_socket.recv(BUFSIZ).decode("utf8") # receive msg
-<<<<<<< HEAD
+            
             MSGNB += 1
             dkmsg = devigenere(msg, chr(20))                # decrypts vig cypher
 
@@ -29,13 +29,8 @@ def receive():
                 msg_list.insert(tkinter.END, dkmsg)
                 msg_list.see(tkinter.END)                   # scrolls down
 
-            #msg_list.insert(tkinter.END, dkmsg)
-            #msg_list.see(tkinter.END)
-=======
             dkmsg = devigenere(msg, chr(20))                # decrypts vig cypher
-            msg_list.insert(tkinter.END, dkmsg)             # inserts msg on gui
-            msg_list.see(tkinter.END)                       # scrolls down
->>>>>>> 97287ae06ad244f9282f0ec7834e10990d63216e
+         
 
         except OSError:                                     # Possibly client has left the chat.
             break
@@ -51,7 +46,6 @@ def send(event=None):                                       # event is passed by
     if msg == "/quit":                                      # exits the app
         client_socket.close()
         top.quit()                                          # exits the GUI
-<<<<<<< HEAD
 
     elif msg[:5] == "/name":
         old = NAME
@@ -62,18 +56,6 @@ def send(event=None):                                       # event is passed by
     else:
         kmsg = vigenerechiffr(NAME + ": " + msg, chr(vigkeyint))                 # cyphers msg using vig
 
-=======
-
-    elif msg[:5] == "/name":
-        old = NAME
-        NAME = msg[6:]
-        my_msg.set("")
-        client_socket.send(bytes(vigenerechiffr(old + " changed name to " + NAME, chr(vigkeyint)), "utf8"))
-
-    else:
-        kmsg = vigenerechiffr(NAME + ": " + msg, chr(vigkeyint))                 # cyphers msg using vig
-
->>>>>>> 97287ae06ad244f9282f0ec7834e10990d63216e
         my_msg.set("")                                      # Clears input field.
         client_socket.send(bytes(kmsg, "utf8"))             # sends msg to server for distribution
 
@@ -130,10 +112,10 @@ def rsa_status():
         vigkey = decrypt(int(rsavigkey), int(rsapriv), rsapub_n)  # c, d, n !! All variables should be int, not float !!
 
         # greeting messages
-<<<<<<< HEAD
+
         msg_list.insert(tkinter.END, "You are sheep client!")
-=======
->>>>>>> 97287ae06ad244f9282f0ec7834e10990d63216e
+
+
         msg_list.insert(tkinter.END, "Welcome! If you ever want to quit, type /quit to exit.")
         msg_list.insert(tkinter.END, "If you want to change your name type /name <NAME>.")
 
@@ -175,10 +157,8 @@ input_q = 59
 vigkey = "thisisthekey"
 vigkeyint = 20
 NAME = getfqdn()
-<<<<<<< HEAD
+
 MSGNB = 2
-=======
->>>>>>> 97287ae06ad244f9282f0ec7834e10990d63216e
 
 gen_n, gen_e = publickey(input_p, input_q)                      # RSA pub setup
 gen_d = privatekey(input_p, input_q, gen_e)                     # RSA private setup
