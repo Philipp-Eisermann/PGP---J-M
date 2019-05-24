@@ -1,161 +1,135 @@
 #!/usr/bin/env python3
 """Script for Tkinter GUI chat client."""
-from socket import AF_INET, socket, SOCK_STREAM
+from socket import *
 from threading import Thread
-from vigenere_lib import *
+from krypt_lib import *
 import tkinter
 import time
 
-#- - - - - - - - - - - - - - - - R S A - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - SOCKET - - - - - - - - - - - - - - - -
 
-def gcd(a, h):
-    #trouver le pgcd de a et h
-    while (1):
-        temp = a % h
-        if (temp == 0):
-            return h
-            break
-        a = h
-        h = temp
-
-def publickey(p, q):
-    # Premiere partie de la cle publique
-    n = p*q
-
-    # Deuxieme partie de la cle publique
-    # e pour encrypt
-    phi = (p-1)*(q-1)
-    e = 2
-    while (e < phi):
-        # Trouver e tel que e coprime a phi et e<phi
-        if (gcd(e, phi) == 1):
-            break
-        else:
-            e += 1
-    return [n, e]
-
-def privatekey(p, q, e):
-    #regenerer phi
-    phi = (p-1)*(q-1)
-    # Generer clee privee d comme decrypt
-    # d = (1 + k*phi) / e pour k une variable int constante, (ex. k=2)
-    k = 2
-    d = ( 1 + (k*phi) ) / e
-    return d
-
-def encrypt(msg, n, e):
-    # Trouver c, le message crypte
-    # c = (msg ^ e) % n
-    c = pow(msg, e) % n
-    return c
-
-def decrypt(c, d, n):
-    # msg = (c^d) % n
-    m = pow(c, d) % n
-    return m
-
-#- - - - - - - - - - - - - - - - SOCKET - - - - - - - - - - - - - - - -
 
 def receive():
     """Handles receiving of messages."""
+    global NAME
+    global MSGNB
+
     while True:
         try:
-            msg = client_socket.recv(BUFSIZ).decode("utf8")
-            print(vigkey)
-            dkmsg = devigenere(msg, chr(20))
-            msg_list.insert(tkinter.END, dkmsg)
-            msg_list.see(tkinter.END)
+            msg = client_socket.recv(BUFSIZ).decode("utf8") # receive msg
+            MSGNB += 1
+            dkmsg = devigenere(msg, chr(20))                # decrypts vig cypher
 
-        except OSError:  # Possibly client has left the chat.
+            if NAME in dkmsg[:len(NAME)]:                   # Check if msg comes from user1
+                msg_list.insert(tkinter.END, dkmsg)
+                msg_list.itemconfig(MSGNB, fg = 'blue')
+                                                            # inserts msg on gui
+            else:
+                msg_list.insert(tkinter.END, dkmsg)
+                msg_list.see(tkinter.END)                   # scrolls down
+
+            #msg_list.insert(tkinter.END, dkmsg)
+            #msg_list.see(tkinter.END)
+
+        except OSError:                                     # Possibly client has left the chat.
             break
 
 
-def send(event=None):  # event is passed by binders.
+def send(event=None):                                       # event is passed by binders.
     """Handles sending of messages."""
+    global NAME
+    global vigkeyint
+
     msg = my_msg.get()
 
-    if msg == "/quit":
+    if msg == "/quit":                                      # exits the app
         client_socket.close()
-        top.quit()
+        top.quit()                                          # exits the GUI
+
+    elif msg[:5] == "/name":
+        old = NAME
+        NAME = msg[6:]
+        my_msg.set("")
+        client_socket.send(bytes(vigenerechiffr(old + " changed name to " + NAME, chr(vigkeyint)), "utf8"))
+
     else:
-        kmsg = vigenerechiffr(msg, chr(20)) # message chiffre en vigenere
-        print(vigkey)
-        print(msg, ' ', kmsg)
+        kmsg = vigenerechiffr(NAME + ": " + msg, chr(vigkeyint))                 # cyphers msg using vig
 
-        my_msg.set("")  # Clears input field.
-        client_socket.send(bytes(kmsg, "utf8"))
-
+        my_msg.set("")                                      # Clears input field.
+        client_socket.send(bytes(kmsg, "utf8"))             # sends msg to server for distribution
 
 
 def on_closing(event=None):
     """This function is to be called when the window is closed."""
-    my_msg.set("/quit")
+    my_msg.set("/quit")                                     # calls the msg == "/quit" routine
     send()
 
-def key_setup():
-    vigkey = 20
-    # envoyer au serveur la clef publique et recevoir la clef publique de l'autre client
-    #client_socket.send(bytes(str(n), "utf8"))
-    #time.sleep(1)
-    #client_socket.send(bytes(str(e), "utf8"))
-    #time.sleep(1)
-    #n2 = client_socket.recv(BUFSIZ).decode("utf8")
-    #time.sleep(1)
-    #e2 = client_socket.recv(BUFSIZ).decode("utf8")
-    #return [n2, e2]
 
+def key_setup():
+    """Sets up the RSA cyphering"""
+    vigkey = 20
 
 
 def rsa_status():
+    """This function handles the sharing of cypher keys"""
     vigkeyint = 20
     try:
-        status = RSA.recv(BUFSIZ).decode("utf8")
+        status = RSA.recv(BUFSIZ).decode("utf8")            # rcv status from Server
         print(status)
     except:
-        print("couille")
+        print("problem!")                                   # if status not received, throw error
         return 0
 
     if status == "head":
+
+        # greeting messages
         msg_list.insert(tkinter.END, "You are head client!")
         msg_list.insert(tkinter.END, "Welcome! If you ever want to quit, type /quit to exit.")
-        msg_list.insert(tkinter.END, "What is your name?")
+        msg_list.insert(tkinter.END, "If you want to change your name type /name <NAME>.")
+
+        client_socket.send(bytes(vigenerechiffr(NAME, chr(vigkeyint)), "utf8"))
+
         while True:
-            pubkey2 = RSA.recv(BUFSIZ).decode("utf8") #recevoir la clepub du sheep via le serv
-            pubkey2_s = pubkey2.split(' ') #decomposer la cle
+            pubkey2 = RSA.recv(BUFSIZ).decode("utf8")       # rcv pubkey from sheep via server
+
+            pubkey2_s = pubkey2.split(' ')                  # prepare received key for usage
             pubkey2_s_n = int(pubkey2_s[0])
             pubkey2_s_e = int(pubkey2_s[1])
+
             rsavigkey = encrypt(vigkeyint, pubkey2_s_n, pubkey2_s_e) #msg, n, e
-            print(str(rsavigkey))
             RSA.send(bytes(str(rsavigkey), "utf8")) # envoyer au serveur
 
     else:
-        rsapub_n, rsapub_e = publickey(input_p, input_q) #p, q
-        rsapriv = privatekey(input_p, input_q, rsapub_e) #p, q, e
-        print(str(rsapub_n) + " " + str(rsapub_e))
+        rsapub_n, rsapub_e = publickey(input_p, input_q)    # p, q
+        rsapriv = privatekey(input_p, input_q, rsapub_e)    # p, q, e
+
         pubkey = str(rsapub_n) + ' ' + str(rsapub_e)
-        print("be")
-        RSA.send(bytes(pubkey, "utf8")) #sheep envoie la cle publique au serveur
-        print("af")
+        RSA.send(bytes(pubkey, "utf8"))                     # sheep sends pubkey to server
         time.sleep(1)
-        rsavigkey = RSA.recv(BUFSIZ).decode("utf8") #sheep recoit vigkey du head
-        print("c: " + rsavigkey)
-        print("d: " + str(rsapriv))
-        print("n: " + str(rsapub_n))
-        vigkey = decrypt(int(rsavigkey), int(rsapriv), rsapub_n) #c, d, n !!! Attention les variables doivent toutes etre des int, pas de float !!!
-        print(str(vigkey))
+
+        rsavigkey = RSA.recv(BUFSIZ).decode("utf8")         # sheep rcv vigkey from head, via serv
+        vigkey = decrypt(int(rsavigkey), int(rsapriv), rsapub_n)  # c, d, n !! All variables should be int, not float !!
+
+        # greeting messages
+        msg_list.insert(tkinter.END, "You are sheep client!")
         msg_list.insert(tkinter.END, "Welcome! If you ever want to quit, type /quit to exit.")
-        msg_list.insert(tkinter.END, "What is your name?")
+        msg_list.insert(tkinter.END, "If you want to change your name type /name <NAME>.")
+
+        client_socket.send(bytes(vigenerechiffr(NAME, chr(vigkeyint)), "utf8"))
+        client_socket.send(bytes(vigenerechiffr(NAME + " joined the chat!", chr(vigkeyint)), "utf8"))
+
         return vigkey
 
 
-#- - - - - - - - - - - - - - - - TKINTER - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - TKINTER - - - - - - - - - - - - - - - -
 top = tkinter.Tk()
 top.title("J & M messenger")
 
 messages_frame = tkinter.Frame(top)
-my_msg = tkinter.StringVar()  # For the messages to be sent.
+my_msg = tkinter.StringVar()                                # For the messages to be sent.
 my_msg.set("Type your messages here.")
-scrollbar = tkinter.Scrollbar(messages_frame)  # To navigate through past messages.
+scrollbar = tkinter.Scrollbar(messages_frame)               # To navigate through past messages.
+
 # Following will contain the messages.
 msg_list = tkinter.Listbox(messages_frame, height=15, width=50, yscrollcommand=scrollbar.set)
 scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y)
@@ -166,46 +140,56 @@ messages_frame.pack()
 entry_field = tkinter.Entry(top, textvariable=my_msg)
 entry_field.bind("<Return>", send)
 entry_field.pack()
-send_button = tkinter.Button(top, text="Send", command=send)
+
+send_button = tkinter.Button(top, text="Send", command=send)    # calls send on push of button
 send_button.pack()
 
 top.protocol("WM_DELETE_WINDOW", on_closing)
 
-#- - - - - - - - - - - - - - - - M A I N - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - M A I N - - - - - - - - - - - - - - - -
 
 input_p = 53
 input_q = 59
 vigkey = "thisisthekey"
 vigkeyint = 20
+NAME = getfqdn()
+MSGNB = 2
 
-gen_n, gen_e = publickey(input_p, input_q)
-gen_d = privatekey(input_p, input_q, gen_e)
+gen_n, gen_e = publickey(input_p, input_q)                      # RSA pub setup
+gen_d = privatekey(input_p, input_q, gen_e)                     # RSA private setup
 
 HOST = input('Enter host: ')
 PORT = input('Enter port: ')
-if not PORT:
+
+if not PORT:                                                    # default value
     PORT = 33000
 else:
     PORT = int(PORT)
 
 RSAPORT = 8081
 BUFSIZ = 1024
+
+# sets up addresses
 ADDR = (HOST, PORT)
 RSAADDR = (HOST, RSAPORT)
 
+# sets up RSA socket
 RSA = socket(AF_INET, SOCK_STREAM)
 RSA.connect(RSAADDR)
 
+# sets up client socket
 client_socket = socket(AF_INET, SOCK_STREAM)
 client_socket.connect(ADDR)
 
-#client2_n, client_e = setup_rsa(gen_n, gen_e)
+# client2_n, client_e = setup_rsa(gen_n, gen_e)
 
+# sets up the threads
 receive_thread = Thread(target=receive)
 rsastatus_thread = Thread(target=rsa_status)
 keysetup_thread = Thread(target=key_setup)
 
+# runs the threads
 rsastatus_thread.start()
 receive_thread.start()
 
-tkinter.mainloop()  # Starts GUI execution.
+tkinter.mainloop()                                              # Starts GUI execution.
