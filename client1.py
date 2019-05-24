@@ -1,3 +1,19 @@
+#Jose & Mehmout messenger; a free messenging app
+#    Copyright (C) 2019  Philipp EISERMANN and Elouan GROS
+
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 #!/usr/bin/env python3
 """Script for Tkinter GUI chat client."""
 from socket import *
@@ -17,7 +33,6 @@ def receive():
     while True:
         try:
             msg = client_socket.recv(BUFSIZ).decode("utf8") # receive msg
-<<<<<<< HEAD
             MSGNB += 1
             dkmsg = devigenere(msg, chr(20))                # decrypts vig cypher
 
@@ -31,11 +46,10 @@ def receive():
 
             #msg_list.insert(tkinter.END, dkmsg)
             #msg_list.see(tkinter.END)
-=======
+
             dkmsg = devigenere(msg, chr(20))                # decrypts vig cypher
             msg_list.insert(tkinter.END, dkmsg)             # inserts msg on gui
             msg_list.see(tkinter.END)                       # scrolls down
->>>>>>> 97287ae06ad244f9282f0ec7834e10990d63216e
 
         except OSError:                                     # Possibly client has left the chat.
             break
@@ -51,7 +65,7 @@ def send(event=None):                                       # event is passed by
     if msg == "/quit":                                      # exits the app
         client_socket.close()
         top.quit()                                          # exits the GUI
-<<<<<<< HEAD
+
 
     elif msg[:5] == "/name":
         old = NAME
@@ -62,8 +76,6 @@ def send(event=None):                                       # event is passed by
     else:
         kmsg = vigenerechiffr(NAME + ": " + msg, chr(vigkeyint))                 # cyphers msg using vig
 
-=======
-
     elif msg[:5] == "/name":
         old = NAME
         NAME = msg[6:]
@@ -73,7 +85,7 @@ def send(event=None):                                       # event is passed by
     else:
         kmsg = vigenerechiffr(NAME + ": " + msg, chr(vigkeyint))                 # cyphers msg using vig
 
->>>>>>> 97287ae06ad244f9282f0ec7834e10990d63216e
+
         my_msg.set("")                                      # Clears input field.
         client_socket.send(bytes(kmsg, "utf8"))             # sends msg to server for distribution
 
@@ -130,10 +142,9 @@ def rsa_status():
         vigkey = decrypt(int(rsavigkey), int(rsapriv), rsapub_n)  # c, d, n !! All variables should be int, not float !!
 
         # greeting messages
-<<<<<<< HEAD
+
         msg_list.insert(tkinter.END, "You are sheep client!")
-=======
->>>>>>> 97287ae06ad244f9282f0ec7834e10990d63216e
+
         msg_list.insert(tkinter.END, "Welcome! If you ever want to quit, type /quit to exit.")
         msg_list.insert(tkinter.END, "If you want to change your name type /name <NAME>.")
 
@@ -177,8 +188,7 @@ vigkeyint = 20
 NAME = getfqdn()
 <<<<<<< HEAD
 MSGNB = 2
-=======
->>>>>>> 97287ae06ad244f9282f0ec7834e10990d63216e
+
 
 gen_n, gen_e = publickey(input_p, input_q)                      # RSA pub setup
 gen_d = privatekey(input_p, input_q, gen_e)                     # RSA private setup
